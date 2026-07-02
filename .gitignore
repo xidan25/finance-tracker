@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# macOS / IDE / agent tooling
+.DS_Store
+.idea/
+.vscode/
+.claude/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Generated reports (private)
+reports/
+
+# stray one-off artifacts (not part of the project)
+ndx-vs-spx.*
