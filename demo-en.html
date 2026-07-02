@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>finance-tracker · Demo</title>
+<style>
+  :root{
+    --bg:#eceef2; --card:#fafbfd; --panel:#e4e7ee;
+    --ink:#353842; --head:#4c5680; --muted:#888d9b;
+    --line:#d8dbe3; --line-soft:#e5e8ee;
+    --accent:#616da0; --accent-deep:#454e77; --grass:#9aa3cb; --accent-soft:#e5e8f3;
+    --term-bg:#373b47; --term-ink:#e2e5ec; --term-dim:#8b91a3; --term-hi:#a7b0d8; --term-blue:#93a6c8;
+    --p-orange:#f0e3cf; --p-orange-t:#87693f;
+    --p-green:#dde7d3; --p-green-t:#516a3f;
+    --p-blue:#d5dfe8; --p-blue-t:#456276;
+    --p-pink:#eddadd; --p-pink-t:#855659;
+    --p-purple:#e0dbec; --p-purple-t:#5f577d;
+    --p-teal:#d3e3e4; --p-teal-t:#3f6668;
+    --p-grey:#e3e5ec; --p-grey-t:#686c78;
+    --p-red:#ecdad6; --p-red-t:#875242;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.7; font-size:16px;}
+  .wrap{max-width:940px; margin:0 auto; padding:48px 28px 120px;}
+  h1{font-size:30px; color:var(--head); margin:0 0 6px;}
+  .lede{color:var(--muted); font-size:16px; margin:0 0 8px;}
+  .demo-note{display:inline-block; background:var(--accent-soft); color:var(--accent-deep); font-size:13px; font-weight:600; padding:4px 12px; border-radius:20px; margin:8px 0 34px;}
+  h2.sec{font-size:23px; color:var(--head); margin:56px 0 4px; display:flex; align-items:center; gap:11px;}
+  h2.sec .n{width:30px; height:30px; border-radius:9px; background:var(--accent); color:#fff; font-size:15px; font-weight:700; display:grid; place-items:center; flex:none;}
+  .sec-sub{color:var(--muted); margin:2px 0 18px;}
+  h3{font-size:16px; color:var(--head); margin:26px 0 8px;}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:.9em;}
+  p code{background:#e6e8ef; padding:2px 6px; border-radius:5px; color:#454e77;}
+
+  .term{background:var(--term-bg); border-radius:12px; overflow:hidden; margin:14px 0; box-shadow:0 6px 22px rgba(55,59,71,.18);}
+  .term .bar{display:flex; align-items:center; gap:7px; padding:10px 14px; background:#40444f; border-bottom:1px solid #4a4e59;}
+  .term .bar i{width:11px; height:11px; border-radius:50%; display:inline-block;}
+  .term .bar .r{background:#b98a8a} .term .bar .y{background:#c2b085} .term .bar .g{background:#8ba0a0}
+  .term .bar span{margin-left:8px; color:#a6abb8; font-size:12px; font-family:"SF Mono",ui-monospace,monospace;}
+  .term pre{margin:0; padding:16px 18px; color:var(--term-ink); font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.65; overflow-x:auto;}
+  .term .cmd{color:#fff} .term .dim{color:var(--term-dim)} .term .b{color:var(--term-blue)} .term .ok{color:var(--term-hi)}
+  .notif{display:flex; gap:12px; align-items:center; max-width:400px; background:#fbfbfe; border:1px solid var(--line); border-radius:14px; padding:12px 15px; margin:14px 0; box-shadow:0 4px 14px rgba(55,59,71,.10);}
+  .notif .ico{width:34px; height:34px; border-radius:8px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:700; flex:none;}
+  .notif b{display:block; font-size:14px} .notif small{color:var(--muted); font-size:13px}
+
+  .notion{background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(55,59,71,.08); margin:14px 0;}
+  .notion .top{padding:14px 18px 4px;}
+  .notion .top .title{font-size:19px; font-weight:700; color:#37352f; display:flex; align-items:center; gap:9px;}
+  .notion .top .title .ic{width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg,#9aa3cb,#4c5680); display:inline-block;}
+  .notion .top .meta{color:#9b9a94; font-size:13px; margin:2px 0 8px;}
+  .ntable{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .ntable th{text-align:left; font-weight:500; color:#9b9a94; padding:7px 12px; border-top:1px solid #ecebe4; border-bottom:1px solid #ecebe4; white-space:nowrap; font-size:12.5px;}
+  .ntable td{padding:8px 12px; border-bottom:1px solid #f1f0ea; color:#37352f; white-space:nowrap; vertical-align:middle;}
+  .ntable tr:hover td{background:#faf9f6;}
+  .ntable .m{font-weight:500}
+  .ntable .amt{font-variant-numeric:tabular-nums; text-align:right;}
+  .ntable .cur{color:#9b9a94; font-variant-numeric:tabular-nums;}
+  .pill{display:inline-block; padding:1px 9px; border-radius:20px; font-size:12px; line-height:1.55; white-space:nowrap;}
+  .orange{background:var(--p-orange); color:var(--p-orange-t)} .green{background:var(--p-green); color:var(--p-green-t)}
+  .blue{background:var(--p-blue); color:var(--p-blue-t)} .pink{background:var(--p-pink); color:var(--p-pink-t)}
+  .purple{background:var(--p-purple); color:var(--p-purple-t)} .teal{background:var(--p-teal); color:var(--p-teal-t)}
+  .grey{background:var(--p-grey); color:var(--p-grey-t)} .red{background:var(--p-red); color:var(--p-red-t)}
+  .src{font-family:"SF Mono",monospace; font-size:11.5px; color:#a5a49d;}
+  .scroll{overflow-x:auto;}
+
+  .report{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:30px 34px; margin:14px 0; box-shadow:0 4px 16px rgba(55,59,71,.08);}
+  .report h4.rt{font-size:22px; color:var(--head); margin:0 0 4px;}
+  .report h5{font-size:16px; color:var(--head); margin:24px 0 8px; padding-bottom:5px; border-bottom:1px solid var(--line-soft);}
+  .report h6{font-size:14px; color:var(--accent-deep); margin:16px 0 6px; font-weight:600;}
+  .report ul{margin:8px 0; padding-left:20px} .report li{margin:4px 0}
+  .report .kv{color:var(--muted)}
+  .report table{width:100%; border-collapse:collapse; font-size:13.5px; margin:10px 0;}
+  .report th{background:var(--panel); color:var(--head); font-weight:600; text-align:left; padding:7px 10px; border:1px solid var(--line);}
+  .report td{padding:6px 10px; border:1px solid var(--line); font-variant-numeric:tabular-nums;}
+  .report td.r,.report th.r{text-align:right}
+  .report .bars{background:var(--term-bg); color:var(--term-ink); border-radius:10px; padding:14px 16px; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.5; overflow-x:auto; margin:10px 0;}
+  .report .bars .lab{color:var(--term-dim)}
+  .up{color:#a5563f} .down{color:#4f7d6a} .flat{color:var(--muted)}
+  .report .llm{border-top:2px dashed var(--line); margin-top:26px; padding-top:8px;}
+  .report .gen{color:var(--muted); font-size:12.5px; font-style:italic; margin-top:20px;}
+  .warnline{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; padding:3px 10px; border-radius:6px; display:inline-block;}
+  .foot{margin-top:60px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:14px;}
+  .foot a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>finance-tracker · Demo</h1>
+  <p class="lede">Once it's set up, you get three things: a local sync tool that runs daily, a Notion table you can browse anytime, and a monthly spending review.</p>
+  <div class="demo-note">Everything below is fictional demo data — no real transactions</div>
+
+  <!-- 1. LOCAL TOOL -->
+  <h2 class="sec"><span class="n">1</span>Local sync tool</h2>
+  <p class="sec-sub">A command-line program that runs on your own computer. Each day it reads email, classifies with AI, writes to a database, syncs to Notion, and pops a notification when done.</p>
+
+  <h3>Daily automatic run</h3>
+  <div class="term">
+    <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>run_daily.py</span></div>
+<pre><span class="cmd">$ uv run python scripts/run_daily.py</span>
+<span class="dim">Ingest [scotiabank visa] run #48:</span> emails=6 created=<span class="ok">2</span> cache=3 llm=1 dups=1 skipped=0 parse_fail=0 errors=0
+<span class="dim">Ingest [dbs visa] run #49:</span> emails=9 created=<span class="ok">4</span> cache=2 llm=2 dups=3 skipped=0 parse_fail=0 errors=0
+<span class="b">Pull:</span> updated=1 rule_updates=0
+<span class="b">Push:</span> created=<span class="ok">6</span> failed=0
+<span class="dim">New rows:</span> count=6 sums=[<span class="ok">SGD 143.70</span>]</pre>
+  </div>
+  <div class="notif">
+    <div class="ico">$</div>
+    <div><b>Finance tracker</b><small>6 new · SGD 143.70</small></div>
+  </div>
+
+  <h3>Browse recent transactions</h3>
+  <div class="term">
+    <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>show_transactions.py</span></div>
+<pre><span class="cmd">$ uv run python scripts/show_transactions.py</span>
+  <span class="dim">#  date        status   amount       merchant                   category              tags            src</span>
+<span class="dim">--------------------------------------------------------------------------------------------------------------</span>
+ 73  2026-05-28  posted    39.90 SGD   UNIQLO                     Shopping              ['clothing']    <span class="b">llm</span>
+ 72  2026-05-28  posted     5.30 SGD   KOI THE                    Food &amp; Drink          ['drinks']      <span class="dim">cache</span>
+ 71  2026-05-27  pending   12.64 CAD*  TIM HORTONS                Food &amp; Drink          ['coffee']      <span class="dim">cache</span>
+ 70  2026-05-27  posted     8.90 SGD   GRAB                       Transport             ['taxi']        <span class="dim">cache</span>
+ 69  2026-05-26  posted    48.60 SGD   FAIRPRICE FINEST           Groceries             ['supermarket'] <span class="dim">rule</span>
+ 68  2026-05-25  posted    15.20 SGD   MCDONALD'S                 Food &amp; Drink          ['takeout']     <span class="dim">cache</span>
+ 67  2026-05-24  posted    51.00 SGD   GOLDEN VILLAGE             Entertainment         ['movies']      <span class="b">llm</span></pre>
+  </div>
+  <p style="color:var(--muted); font-size:14px">A <code>*</code> marks a foreign transaction; the <code>src</code> column shows whether the classification came from the AI (<code>llm</code>) or from a local cache / rule reuse (<code>cache</code> / <code>rule</code>) — more reuse means fewer AI calls.</p>
+
+  <!-- 2. NOTION -->
+  <h2 class="sec"><span class="n">2</span>Notion table</h2>
+  <p class="sec-sub">The same data syncs to Notion so you can browse, filter, and total by category on your phone or laptop. Amounts are normalized to a base currency (here SGD); the original currency is kept in its own column.</p>
+  <div class="notion">
+    <div class="top">
+      <div class="title"><span class="ic"></span>Transactions</div>
+      <div class="meta">Table · 73 rows · May 2026</div>
+    </div>
+    <div class="scroll">
+    <table class="ntable">
+      <thead><tr>
+        <th>Merchant</th><th>Tags</th><th>Date</th><th>Card</th>
+        <th style="text-align:right">Amount</th><th>Category</th><th>Currency</th><th>Source</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="m">UNIQLO</td><td><span class="pill grey">clothing</span></td><td>2026-05-28</td>
+          <td><span class="pill red">scotiabank visa</span></td><td class="amt">39.90</td>
+          <td><span class="pill pink">Shopping</span></td><td class="cur">S$39.90</td><td class="src">llm</td>
+        </tr>
+        <tr>
+          <td class="m">KOI THE</td><td><span class="pill grey">drinks</span></td><td>2026-05-28</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">5.30</td>
+          <td><span class="pill orange">Food &amp; Drink</span></td><td class="cur">S$5.30</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">TIM HORTONS</td><td><span class="pill grey">coffee</span></td><td>2026-05-27</td>
+          <td><span class="pill red">scotiabank visa</span></td><td class="amt">12.20</td>
+          <td><span class="pill orange">Food &amp; Drink</span></td><td class="cur">CA$12.64</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">GRAB</td><td><span class="pill grey">taxi</span></td><td>2026-05-27</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">8.90</td>
+          <td><span class="pill blue">Transport</span></td><td class="cur">S$8.90</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">FAIRPRICE FINEST</td><td><span class="pill grey">supermarket</span></td><td>2026-05-26</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">48.60</td>
+          <td><span class="pill green">Groceries</span></td><td class="cur">S$48.60</td><td class="src">rule</td>
+        </tr>
+        <tr>
+          <td class="m">GOLDEN VILLAGE</td><td><span class="pill grey">movies</span></td><td>2026-05-24</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">51.00</td>
+          <td><span class="pill purple">Entertainment</span></td><td class="cur">S$51.00</td><td class="src">llm</td>
+        </tr>
+        <tr>
+          <td class="m">GUARDIAN PHARMACY</td><td><span class="pill grey">pharmacy</span></td><td>2026-05-10</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">41.20</td>
+          <td><span class="pill teal">Health</span></td><td class="cur">S$41.20</td><td class="src">llm</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <p style="color:var(--muted); font-size:14px">Categories or notes you edit by hand in Notion are <b>read back</b> into the local database next sync and remembered — the same merchant auto-applies next time, so you never fix it twice.</p>
+
+  <!-- 3. MONTHLY REPORT -->
+  <h2 class="sec"><span class="n">3</span>Monthly review report</h2>
+  <p class="sec-sub">One per month, analysis-first. The first four sections are pure numbers (overview / structure / rhythm / anomalies); the last is the AI reading those numbers into plain-language findings. The report is saved as Markdown and can be pushed to Notion.</p>
+
+  <div class="report">
+    <h4 class="rt">May 2026 · Spending Review (SGD)</h4>
+
+    <h5>① Overview</h5>
+    <ul>
+      <li><b>Total spent</b>: SGD 1,284.60
+        <ul><li class="kv">vs 2026-04 (SGD 1,102.30): <span class="up">+16.5%</span> ｜ vs 3-month average (SGD 1,180.00): <span class="up">+8.9%</span></li></ul>
+      </li>
+      <li class="egg-home"><b>Count</b> 73 ｜ <b>Avg ticket</b> SGD 17.60 ｜ <b>Active</b> 24/31 days (7 no-spend days)</li>
+    </ul>
+
+    <h5>② Structure: where the money went</h5>
+    <h6>By category (with trend)</h6>
+    <table>
+      <thead><tr><th>Category</th><th class="r">Amount(SGD)</th><th class="r">Share</th><th class="r">Count</th><th class="r">Avg</th><th class="r">MoM</th><th class="r">vs 3m</th></tr></thead>
+      <tbody>
+        <tr><td>Food &amp; Drink</td><td class="r">486.20</td><td class="r">38%</td><td class="r">41</td><td class="r">11.86</td><td class="r up">+12%</td><td class="r up">+8%</td></tr>
+        <tr><td>Groceries</td><td class="r">268.40</td><td class="r">21%</td><td class="r">9</td><td class="r">29.82</td><td class="r down">−5%</td><td class="r up">+3%</td></tr>
+        <tr><td>Transport</td><td class="r">176.90</td><td class="r">14%</td><td class="r">14</td><td class="r">12.64</td><td class="r up">+20%</td><td class="r up">+15%</td></tr>
+        <tr><td>Shopping</td><td class="r">152.00</td><td class="r">12%</td><td class="r">4</td><td class="r">38.00</td><td class="r down">−18%</td><td class="r down">−22%</td></tr>
+        <tr><td>Entertainment</td><td class="r">84.50</td><td class="r">7%</td><td class="r">3</td><td class="r">28.17</td><td class="r up">+40%</td><td class="r up">+30%</td></tr>
+        <tr><td>Health</td><td class="r">66.60</td><td class="r">5%</td><td class="r">2</td><td class="r">33.30</td><td class="r flat">—</td><td class="r flat">—</td></tr>
+        <tr><td>Housing &amp; Utilities</td><td class="r">50.00</td><td class="r">4%</td><td class="r">1</td><td class="r">50.00</td><td class="r flat">0%</td><td class="r flat">0%</td></tr>
+      </tbody>
+    </table>
+
+    <h6>Tag view</h6>
+    <ul>
+      <li><b>Eating out vs cooking</b>: eating out (Food &amp; Drink) SGD 486.20 ｜ groceries SGD 268.40 → eating-out share <b>64%</b></li>
+      <li class="egg-dine"><b>Coffee</b> 11 orders SGD 58.30 ｜ <b>dining out</b> 9 times</li>
+    </ul>
+
+    <h6>Merchants</h6>
+    <p style="margin:4px 0; font-size:13.5px"><b>Top 5 by amount ｜ Top 5 by frequency</b></p>
+    <table>
+      <thead><tr><th>Merchant (amount)</th><th class="r">SGD</th><th>Merchant (freq)</th><th class="r">×</th></tr></thead>
+      <tbody>
+        <tr><td>FAIRPRICE FINEST</td><td class="r">148.60</td><td>GRAB</td><td class="r">9</td></tr>
+        <tr><td>SHOPEE</td><td class="r">92.00</td><td>KOI THE</td><td class="r">8</td></tr>
+        <tr><td>GOLDEN VILLAGE</td><td class="r">51.00</td><td>STARBUCKS</td><td class="r">6</td></tr>
+        <tr><td>GRAB</td><td class="r">44.50</td><td>7-ELEVEN</td><td class="r">6</td></tr>
+        <tr><td>GUARDIAN PHARMACY</td><td class="r">41.20</td><td>MCDONALD'S</td><td class="r">5</td></tr>
+      </tbody>
+    </table>
+    <ul><li class="kv"><b>Recurring <span class="egg-kao">(≥3×)</span></b>: GRAB×9, KOI THE×8, STARBUCKS×6, 7-ELEVEN×6, MCDONALD'S×5</li></ul>
+
+    <h5>③ Rhythm</h5>
+    <ul>
+      <li><b>Weekday vs weekend</b>: weekday SGD 742.30 (48 txns) ｜ weekend SGD 542.30 (25 txns)</li>
+      <li><b>Highest-spend day</b>: 2026-05-17 (SGD 186.40)</li>
+    </ul>
+    <div style="font-size:13.5px; font-weight:600; color:var(--accent-deep); margin:12px 0 4px">Weekly trend</div>
+    <div class="bars"><span class="lab">W1  </span> ████████████████████████         268.40
+<span class="lab">W2  </span> ████████████████████████████     312.60
+<span class="lab">W3  </span> ████████████████████████████████ 356.80
+<span class="lab">W4  </span> ██████████████████████           246.80
+<span class="lab">W5  </span> █████████                        100.00</div>
+
+    <h5>④ Anomalies &amp; concentration</h5>
+    <ul><li><b>Concentration</b>: top 5 transactions by amount = <b>21%</b> of total spend</li></ul>
+    <p style="margin:4px 0; font-size:13.5px"><b>Top 5 single transactions</b></p>
+    <ol style="margin:6px 0; padding-left:22px; font-size:14px">
+      <li><b>2026-05-17</b> · SHOPEE · SGD 92.00 <code>[one-off]</code></li>
+      <li><b>2026-05-24</b> · GOLDEN VILLAGE · SGD 51.00</li>
+      <li><b>2026-05-26</b> · FAIRPRICE FINEST · SGD 48.60</li>
+      <li><b>2026-05-10</b> · GUARDIAN PHARMACY · SGD 41.20 <code>[one-off]</code></li>
+      <li><b>2026-05-28</b> · UNIQLO · SGD 39.90 <code>[one-off]</code></li>
+    </ol>
+    <ul style="font-size:14px">
+      <li><b>Outliers</b> (≥ 5× avg ticket): <span class="kv">2026-05-17 · SHOPEE · SGD 92.00 (one-off)</span></li>
+      <li><b>New merchants this month</b> (6): <span class="kv">UNIQLO, GUARDIAN PHARMACY, GONG CHA, DAISO, SUBWAY, CHAGEE</span></li>
+    </ul>
+
+    <div class="llm">
+      <h5 style="border:none">⑤ Reading <span class="warnline" style="margin-left:8px; vertical-align:middle">AI-written · sample</span></h5>
+      <h6>Findings</h6>
+      <ul style="font-size:14px">
+        <li>Food &amp; Drink SGD 486, 41 txns, 38% share — the month's biggest structural expense; eating out (dining out + takeout) is about 70% of it, with only 9 grocery trips.</li>
+        <li>9 taxi rides totaling SGD 142, +20% MoM, clustered on weeknights — looks like a fixed commute-or-late-night-home expense.</li>
+        <li>Drinks add up to over SGD 100: coffee 11 orders SGD 58, plus 7 KOI/Gong Cha-type teas at SGD 45.</li>
+        <li>The largest single charge, SHOPEE SGD 92, is a one-off online purchase; excluding it, Shopping is actually down MoM.</li>
+      </ul>
+      <h6>Where the money went</h6>
+      <p style="font-size:14px">Mostly food (38%) and groceries (21%), together nearly 60%. Versus last month, Transport rose 20% and Entertainment 40% (but on a small base of just 3 txns); the overall structure didn't change much.</p>
+      <h6>Habits</h6>
+      <ul style="font-size:14px">
+        <li>GRAB rides 9× and KOI teas 8× are the two most consistent repeat purchases this month.</li>
+        <li>Convenience store (7-Eleven) 6×, avg SGD 5.4 — mostly small snack/drink top-ups.</li>
+      </ul>
+      <h6>One-off vs structural</h6>
+      <p style="font-size:14px">SHOPEE SGD 92 and UNIQLO SGD 39.9 are both one-off purchases, not a trend; the rest of spending is evenly spread with no unusual concentration.</p>
+      <h6>What the data can't see</h6>
+      <p style="font-size:14px">No rent all month and no income recorded — how you live and where income comes from aren't visible in spending data. There's also no fitness spending (just one pharmacy trip).</p>
+      <h6>A bit of texture</h6>
+      <p class="egg-koi" style="font-size:14px">The most interesting thing in the notes is a fixation on tea: 8 orders from the same KOI, with one note reading "sweetness just right today." Someone with very steady preferences.</p>
+    </div>
+
+    <p class="gen">Generated 2026-06-01 09:14 · reading by claude-sonnet-4-6 based on 73 expenses and 18 notes</p>
+  </div>
+
+  <div class="foot">
+    <p>All screens and figures above are fictional demo data. In real use, all data stays on your own computer and your own Notion.</p>
+    <p>Setup guide: <a href="setup-guide-en.html">setup-guide-en.html</a> · Project: <a href="https://github.com/xidan25/finance-tracker" target="_blank">github.com/xidan25/finance-tracker</a> · MIT License</p>
+  </div>
+</div>
+<script>
+/* ---- easter eggs · find all 10 ---- */
+(function(){
+  var THEME=['#616da0','#9aa3cb','#454e77','#93a6c8','#7d88bb'];
+  var RAINBOW=['#bd5049','#c67e37','#b09b3c','#458a4d','#385fa8','#734d92'];
+  var TOTAL=10, KEY='ft-eggs-demo-en';
+  var CHIP_BG='#fafbfd', CHIP_FG='#4c5680', CHIP_LN='#d8dbe3', SUB='#888d9b', SUBD='#53576a';
+  var IDS=['title','doubt','lights','dollar','home','food','ai','dine','koi','konami'];
+  var found=[]; try{found=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  found=found.filter(function(x,i){return IDS.indexOf(x)>=0&&found.indexOf(x)===i;});
+  try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}
+  function confetti(){
+    var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9999';document.body.appendChild(c);
+    var x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,P=[],i;
+    for(i=0;i<170;i++)P.push({x:Math.random()*W,y:-20-Math.random()*H*0.4,r:4+Math.random()*6,col:THEME[i%THEME.length],vy:2+Math.random()*4,vx:-2.5+Math.random()*5,a:Math.random()*6.3,va:-0.25+Math.random()*0.5});
+    var t=0;(function f(){x.clearRect(0,0,W,H);t++;P.forEach(function(p){p.y+=p.vy;p.x+=p.vx;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.col;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.62);x.restore();});t<260?requestAnimationFrame(f):c.remove();})();
+  }
+  function confettiRainbow(){
+    var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:10001';document.body.appendChild(c);
+    var x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,P=[],i;
+    for(i=0;i<220;i++)P.push({x:Math.random()*W,y:-20-Math.random()*H*0.5,r:7+Math.random()*10,col:RAINBOW[i%RAINBOW.length],vy:1.6+Math.random()*3.2,vx:-2.5+Math.random()*5,a:Math.random()*6.3,va:-0.22+Math.random()*0.44});
+    var t=0;(function f(){x.clearRect(0,0,W,H);t++;P.forEach(function(p){p.y+=p.vy;p.x+=p.vx;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.col;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.62);x.restore();});t<460?requestAnimationFrame(f):c.remove();})();
+  }
+  function rainbow(s){var o='',i;for(i=0;i<s.length;i++){var ch=s.charAt(i);o+='<span style="color:'+RAINBOW[i%6]+'">'+(ch===' '?'&nbsp;':ch)+'</span>';}return o;}
+  function center(msg,sub,note){
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10001;pointer-events:none';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.5);opacity:0;transition:transform .35s cubic-bezier(.2,1.5,.4,1),opacity .35s;background:rgba(255,255,255,.6);border-radius:20px;padding:18px 34px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);box-shadow:0 10px 34px rgba(0,0,0,.07)';
+    b.innerHTML=(msg?'<div style="font-size:38px;font-weight:800;line-height:1.12;letter-spacing:.03em">'+rainbow(msg)+'</div>':'')+(note?'<div style="margin-top:7px;font-size:12px;font-weight:600;color:'+SUBD+'">'+note+'</div>':'')+(sub?'<div style="margin-top:'+(msg?'11':'0')+'px;font-size:14px;font-weight:700;color:'+SUBD+'">'+sub+'</div>':'');
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){b.style.transform='scale(1)';b.style.opacity='1';});
+    setTimeout(function(){b.style.opacity='0';b.style.transform='scale(.92)';setTimeout(function(){o.remove();},380);},2300);
+  }
+  var chipEl;
+  function chip(){
+    if(!chipEl){chipEl=document.createElement('div');chipEl.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9998;background:'+CHIP_BG+';color:'+CHIP_FG+';border:1px solid '+CHIP_LN+';padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.10);letter-spacing:.14em;cursor:pointer';document.body.appendChild(chipEl);chipEl.title='double-click to reset';chipEl.addEventListener('dblclick',function(){try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-kao');}catch(e){}location.reload();});}
+    var d='',i;for(i=0;i<TOTAL;i++)d+=(i<found.length?'●':'○');
+    chipEl.textContent='eggs '+d+' '+found.length+'/'+TOTAL;
+  }
+  function award(id){
+    if(found.indexOf(id)>=0)return false;
+    found.push(id);try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}chip();return true;
+  }
+  function finale(after){
+    confetti();
+    var kaoDone=false;try{kaoDone=localStorage.getItem(KEY+'-kao')==='1';}catch(e){}
+    Array.prototype.forEach.call(document.querySelectorAll('.egg-kao'),function(el){el.style.cursor='pointer';});
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10002;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);cursor:pointer;opacity:0;transition:opacity .35s';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.6);transition:transform .45s cubic-bezier(.2,1.5,.4,1);background:rgba(255,255,255,.72);border-radius:28px;padding:38px 58px;box-shadow:0 20px 60px rgba(0,0,0,.12)';
+    b.innerHTML='<div style="font-size:42px;font-weight:800;line-height:1.12;letter-spacing:.03em">'+rainbow('All found')+'</div><div style="margin-top:11px;font-size:13px;font-weight:600;color:'+SUBD+'">you must be really bored — love it</div><div style="margin-top:14px;font-size:15px;font-weight:700;color:'+SUBD+'">achievement '+TOTAL+' / '+TOTAL+'</div>'+(kaoDone?'':'<div style="margin-top:18px;font-size:12.5px;font-weight:600;color:'+SUBD+';line-height:1.7">P.S. one real hidden egg left…<br>hint: there is a face in the report (^^)</div>')+'<div style="margin-top:18px;font-size:12px;color:'+SUBD+'">click anywhere to close</div>';
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){o.style.opacity='1';b.style.transform='scale(1)';});
+    o.addEventListener('click',function(){o.style.opacity='0';setTimeout(function(){o.remove();if(after)after();},350);});
+  }
+  function reveal(id,msg,note){
+    confetti();
+    if(award(id)){
+      if(found.length>=TOTAL)finale(function(){center(msg,'achievement '+found.length+' / '+TOTAL,note);});
+      else center(msg,'achievement '+found.length+' / '+TOTAL,note);
+    }else center(msg,'already found · achievement '+found.length+' / '+TOTAL,note);
+  }
+  function bobaRain(){
+    for(var i=0;i<28;i++){
+      var s=document.createElement('div');s.textContent='🧋';
+      var size=40+Math.random()*44,dur=1900+Math.random()*1700,delay=Math.random()*600,rot=-50+Math.random()*100;
+      s.style.cssText='position:fixed;top:-70px;left:'+(Math.random()*100)+'vw;font-size:'+size+'px;z-index:10000;pointer-events:none';
+      document.body.appendChild(s);
+      (function(el){el.animate([{transform:'translateY(0) rotate(0deg)',opacity:1},{transform:'translateY('+(innerHeight+140)+'px) rotate('+rot+'deg)',opacity:1,offset:.85},{transform:'translateY('+(innerHeight+180)+'px) rotate('+rot+'deg)',opacity:0}],{duration:dur,delay:delay,easing:'cubic-bezier(.3,.2,.5,1)'}).onfinish=function(){el.remove();};})(s);
+    }
+  }
+  var kaoRun=false,kaoStop=Infinity,kaoN=0;
+  function kaoLoop(){if(!kaoRun)return;kaoStorm();kaoN++;if(kaoN>=kaoStop){kaoRun=false;return;}setTimeout(kaoLoop,1300);}
+  function startKao(){kaoRun=true;kaoStop=Infinity;kaoN=0;kaoLoop();}
+  function stopKaoSoon(){if(kaoRun)kaoStop=kaoN+1;}
+  function kaoStorm(){
+    var K=['↖(^ω^)↗','(>﹏<)','(⌒▽⌒)','(๑•̀ㅂ•́)و','(╯°□°)╯','(｡•́︿•̀｡)','ヽ(°〇°)ﾉ','(・∀・)','(￣▽￣)','(◕‿◕)','(ノ◕ヮ◕)ノ','(≧▽≦)','ʕ•ᴥ•ʔ','(°ロ°)','(´｡• ᵕ •｡`)'];
+    for(var i=0;i<21;i++){
+      var s=document.createElement('div');s.textContent=K[Math.floor(Math.random()*K.length)];
+      var y=Math.random()*96,size=24+Math.random()*36,dur=4200+Math.random()*3400,delay=Math.random()*1300,dir=Math.random()<0.5?1:-1,drift=-20+Math.random()*40;
+      s.style.cssText='position:fixed;top:'+y+'vh;left:0;font-size:'+size+'px;font-weight:700;white-space:nowrap;z-index:10000;pointer-events:none;color:'+RAINBOW[i%6];
+      document.body.appendChild(s);
+      (function(el,d,dr){el.animate([{transform:'translate('+(d>0?-35:135)+'vw,0) rotate(0deg)',opacity:0},{opacity:1,offset:.1},{opacity:1,offset:.9},{transform:'translate('+(d>0?135:-35)+'vw,'+dr+'vh) rotate('+(d*35)+'deg)',opacity:0}],{duration:dur,delay:delay,easing:'linear',fill:'backwards'}).onfinish=function(){el.remove();};})(s,dir,drift);
+    }
+  }
+  function kaoFinale(){
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10003;background:rgba(255,255,255,.2);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);cursor:pointer;opacity:0;transition:opacity .35s';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.6);transition:transform .45s cubic-bezier(.2,1.5,.4,1);background:rgba(255,255,255,.85);border-radius:24px;padding:32px 48px;box-shadow:0 18px 56px rgba(0,0,0,.18);max-width:min(92vw,560px)';
+    b.addEventListener('click',function(e){e.stopPropagation();});
+    b.innerHTML='<div style="font-size:54px;font-weight:800;line-height:1.08;letter-spacing:.02em">'+rainbow('wink!')+'</div><div style="margin-top:7px;font-size:22px;font-weight:800;color:'+SUBD+'">TRUE 100%</div><div style="margin-top:15px;font-size:15px;font-weight:600;color:'+SUBD+';line-height:1.75">A real egg — screenshot this page<br>and reach the author for a little gift (≥3×)</div><div style="margin-top:14px;font-size:14px;font-weight:700"><a href="mailto:kayla.x.zhang@gmail.com" style="color:'+CHIP_FG+';text-decoration:underline">kayla.x.zhang@gmail.com</a></div><div style="margin-top:20px;font-size:12px;color:'+SUBD+'">click outside to close</div>';
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){o.style.opacity='1';b.style.transform='scale(1)';});
+    o.addEventListener('click',function(){o.style.opacity='0';stopKaoSoon();setTimeout(function(){o.remove();},350);});
+  }
+  function kaoHit(){
+    if(found.length<TOTAL)return;
+    try{localStorage.setItem(KEY+'-kao','1');}catch(e){}
+    confettiRainbow();
+    startKao();
+    kaoFinale();
+  }
+  function click(sel,id,msg,note){Array.prototype.forEach.call(document.querySelectorAll(sel),function(el){el.style.cursor='pointer';el.addEventListener('click',function(){reveal(id,msg,note);});});}
+  click('h1','title','Hey, you found me!');
+  click('.demo-note','doubt','Yep, all fake');
+  click('.term .bar','lights','Leave it running');
+  click('.notif','dollar','Ping · spent again');
+  click('.egg-home','home','Stay home, save cash');
+  click('.pill.orange','food','We live to eat!');
+  click('.llm h5','ai','Praise Claude','(monthly report by sonnet 4.6)');
+  click('.egg-dine','dine','Treat yourself less');
+  function koiHit(){
+    bobaRain();
+    if(award('koi')){if(found.length>=TOTAL){finale(function(){center('','achievement '+found.length+' / '+TOTAL);});return;}center('','achievement '+found.length+' / '+TOTAL);}
+    else center('','already found · achievement '+found.length+' / '+TOTAL);
+  }
+  function wrapKoi(){
+    var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+      if(!n.nodeValue||n.nodeValue.indexOf('KOI')<0)return NodeFilter.FILTER_REJECT;
+      var p=n.parentNode;while(p&&p!==document.body){var t=p.nodeName;if(t==='SCRIPT'||t==='STYLE')return NodeFilter.FILTER_REJECT;if(p.classList&&p.classList.contains('egg-koi'))return NodeFilter.FILTER_REJECT;p=p.parentNode;}
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    var ns=[],n;while(n=w.nextNode())ns.push(n);
+    ns.forEach(function(tn){var parts=tn.nodeValue.split('KOI'),frag=document.createDocumentFragment();parts.forEach(function(part,i){if(i>0){var s=document.createElement('span');s.className='egg-koi';s.textContent='KOI';frag.appendChild(s);}if(part)frag.appendChild(document.createTextNode(part));});tn.parentNode.replaceChild(frag,tn);});
+  }
+  wrapKoi();
+  Array.prototype.forEach.call(document.querySelectorAll('.egg-koi'),function(el){el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();koiHit();});});
+  Array.prototype.forEach.call(document.querySelectorAll('.egg-kao'),function(el){if(found.length>=TOTAL)el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();kaoHit();});});
+  var seq=[38,38,40,40,37,39,37,39,66,65],pos=0;
+  addEventListener('keydown',function(e){pos=(e.keyCode===seq[pos])?pos+1:(e.keyCode===seq[0]?1:0);if(pos===seq.length){pos=0;reveal('konami','You know this too?!');}});
+  if(found.length)chip();
+  console.log('%c finance-tracker ','background:#4c5680;color:#fff;padding:4px 10px;border-radius:5px;font-weight:700','\n  10 eggs hidden. Click around (title, demo badge, terminal window, the notification, the no-spend line, a Food & Drink pill, the AI reading block, dining out, KOI), plus the Konami code: ↑ ↑ ↓ ↓ ← → ← → B A\n');
+})();
+</script>
+</body>
+</html>

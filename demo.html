@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>finance-tracker 效果演示</title>
+<style>
+  :root{
+    --bg:#eceae2; --card:#faf9f3; --panel:#e6e4db;
+    --ink:#33352f; --head:#566234; --muted:#8f9088;
+    --line:#dcdbd1; --line-soft:#e5e3da;
+    --accent:#566234; --accent-deep:#454f2a; --grass:#a7b372; --accent-soft:#e7ead6;
+    --term-bg:#3a3c35; --term-ink:#e6e6dd; --term-dim:#9ba089; --term-green:#b9c48a; --term-blue:#9db3ae;
+    /* Notion-ish pastel pills (muted) */
+    --p-orange:#f3e4cf; --p-orange-t:#8a6a3f;
+    --p-green:#dde8d2; --p-green-t:#546b3f;
+    --p-blue:#d7e2e6; --p-blue-t:#4a6670;
+    --p-pink:#efdcdd; --p-pink-t:#875759;
+    --p-purple:#e3ddea; --p-purple-t:#63577d;
+    --p-teal:#d3e5e0; --p-teal-t:#3f6b60;
+    --p-grey:#e5e3da; --p-grey-t:#6c6d64;
+    --p-red:#eedcd6; --p-red-t:#8a5442;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.75; font-size:16px; letter-spacing:.005em;}
+  .wrap{max-width:940px; margin:0 auto; padding:48px 28px 120px;}
+  h1{font-size:30px; color:var(--head); margin:0 0 6px; letter-spacing:.01em;}
+  .lede{color:var(--muted); font-size:16px; margin:0 0 8px;}
+  .demo-note{display:inline-block; background:var(--accent-soft); color:var(--accent-deep); font-size:13px; font-weight:600; padding:4px 12px; border-radius:20px; margin:8px 0 34px;}
+  h2.sec{font-size:23px; color:var(--head); margin:56px 0 4px; display:flex; align-items:center; gap:11px;}
+  h2.sec .n{width:30px; height:30px; border-radius:9px; background:var(--accent); color:#fff; font-size:15px; font-weight:700; display:grid; place-items:center; flex:none;}
+  .sec-sub{color:var(--muted); margin:2px 0 18px;}
+  h3{font-size:16px; color:var(--head); margin:26px 0 8px;}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:.9em;}
+  p code{background:#e8e6db; padding:2px 6px; border-radius:5px; color:#454f2a;}
+
+  /* ---- Terminal window ---- */
+  .term{background:var(--term-bg); border-radius:12px; overflow:hidden; margin:14px 0; box-shadow:0 6px 22px rgba(58,60,53,.18);}
+  .term .bar{display:flex; align-items:center; gap:7px; padding:10px 14px; background:#43453d; border-bottom:1px solid #4d4f46;}
+  .term .bar i{width:11px; height:11px; border-radius:50%; display:inline-block;}
+  .term .bar .r{background:#c98a7d} .term .bar .y{background:#cbb07d} .term .bar .g{background:#93a86f}
+  .term .bar span{margin-left:8px; color:#a9ab9f; font-size:12px; font-family:"SF Mono",ui-monospace,monospace;}
+  .term pre{margin:0; padding:16px 18px; color:var(--term-ink); font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.65; overflow-x:auto;}
+  .term .cmd{color:#fff} .term .p{color:var(--term-green)} .term .dim{color:var(--term-dim)} .term .b{color:var(--term-blue)} .term .ok{color:var(--term-green)}
+  .notif{display:flex; gap:12px; align-items:center; max-width:400px; background:#fbfaf6; border:1px solid var(--line); border-radius:14px; padding:12px 15px; margin:14px 0; box-shadow:0 4px 14px rgba(58,60,53,.10);}
+  .notif .ico{width:34px; height:34px; border-radius:8px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:700; flex:none;}
+  .notif b{display:block; font-size:14px} .notif small{color:var(--muted); font-size:13px}
+
+  /* ---- Notion table ---- */
+  .notion{background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(58,60,53,.08); margin:14px 0;}
+  .notion .top{padding:14px 18px 4px;}
+  .notion .top .title{font-size:19px; font-weight:700; color:#37352f; display:flex; align-items:center; gap:9px;}
+  .notion .top .title .ic{width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg,#a7b372,#566234); display:inline-block;}
+  .notion .top .meta{color:#9b9a94; font-size:13px; margin:2px 0 8px;}
+  .ntable{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .ntable th{text-align:left; font-weight:500; color:#9b9a94; padding:7px 12px; border-top:1px solid #eceae4; border-bottom:1px solid #eceae4; white-space:nowrap; font-size:12.5px;}
+  .ntable td{padding:8px 12px; border-bottom:1px solid #f1efe9; color:#37352f; white-space:nowrap; vertical-align:middle;}
+  .ntable tr:hover td{background:#faf9f6;}
+  .ntable .m{font-weight:500}
+  .ntable .amt{font-variant-numeric:tabular-nums; text-align:right;}
+  .ntable .cur{color:#9b9a94; font-variant-numeric:tabular-nums;}
+  .pill{display:inline-block; padding:1px 9px; border-radius:20px; font-size:12px; line-height:1.55; white-space:nowrap;}
+  .pill+.pill{margin-left:4px}
+  .orange{background:var(--p-orange); color:var(--p-orange-t)} .green{background:var(--p-green); color:var(--p-green-t)}
+  .blue{background:var(--p-blue); color:var(--p-blue-t)} .pink{background:var(--p-pink); color:var(--p-pink-t)}
+  .purple{background:var(--p-purple); color:var(--p-purple-t)} .teal{background:var(--p-teal); color:var(--p-teal-t)}
+  .grey{background:var(--p-grey); color:var(--p-grey-t)} .red{background:var(--p-red); color:var(--p-red-t)}
+  .src{font-family:"SF Mono",monospace; font-size:11.5px; color:#a5a49d;}
+  .scroll{overflow-x:auto;}
+
+  /* ---- Monthly report ---- */
+  .report{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:30px 34px; margin:14px 0; box-shadow:0 4px 16px rgba(58,60,53,.08);}
+  .report h4.rt{font-size:22px; color:var(--head); margin:0 0 4px;}
+  .report h5{font-size:16px; color:var(--head); margin:24px 0 8px; padding-bottom:5px; border-bottom:1px solid var(--line-soft);}
+  .report h6{font-size:14px; color:var(--accent-deep); margin:16px 0 6px; font-weight:600;}
+  .report ul{margin:8px 0; padding-left:20px} .report li{margin:4px 0}
+  .report .kv{color:var(--muted)}
+  .report table{width:100%; border-collapse:collapse; font-size:13.5px; margin:10px 0;}
+  .report th{background:var(--panel); color:var(--head); font-weight:600; text-align:left; padding:7px 10px; border:1px solid var(--line);}
+  .report td{padding:6px 10px; border:1px solid var(--line); font-variant-numeric:tabular-nums;}
+  .report td.r,.report th.r{text-align:right}
+  .report .bars{background:var(--term-bg); color:var(--term-ink); border-radius:10px; padding:14px 16px; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12.5px; line-height:1.5; overflow-x:auto; margin:10px 0;}
+  .report .bars .lab{color:var(--term-dim)}
+  .up{color:#a5563f} .down{color:#5f7d4a} .flat{color:var(--muted)}
+  .report .llm{border-top:2px dashed var(--line); margin-top:26px; padding-top:8px;}
+  .report .gen{color:var(--muted); font-size:12.5px; font-style:italic; margin-top:20px;}
+  .warnline{background:var(--p-orange); color:var(--p-orange-t); font-size:12.5px; padding:3px 10px; border-radius:6px; display:inline-block;}
+  .foot{margin-top:60px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:14px;}
+  .foot a{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>finance-tracker · 效果演示</h1>
+  <p class="lede">装好之后，你会得到三样东西：一个每天自动跑的本地同步工具、一张随时可查的 Notion 账目表、以及一份月度消费复盘。</p>
+  <div class="demo-note">下面全部为演示用的虚构数据，不涉及任何真实账目</div>
+
+  <!-- ============ 1. LOCAL TOOL ============ -->
+  <h2 class="sec"><span class="n">1</span>本地同步工具</h2>
+  <p class="sec-sub">跑在你自己电脑上的一个命令行程序。每天自动读邮件、用 AI 分类、写进数据库、同步 Notion，跑完弹一条通知。</p>
+
+  <h3>每日自动运行</h3>
+  <div class="term">
+    <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>run_daily.py</span></div>
+<pre><span class="cmd">$ uv run python scripts/run_daily.py</span>
+<span class="dim">Ingest [scotiabank visa] run #48:</span> emails=6 created=<span class="ok">2</span> cache=3 llm=1 dups=1 skipped=0 parse_fail=0 errors=0
+<span class="dim">Ingest [dbs visa] run #49:</span> emails=9 created=<span class="ok">4</span> cache=2 llm=2 dups=3 skipped=0 parse_fail=0 errors=0
+<span class="b">Pull:</span> updated=1 rule_updates=0
+<span class="b">Push:</span> created=<span class="ok">6</span> failed=0
+<span class="dim">New rows:</span> count=6 sums=[<span class="ok">SGD 143.70</span>]</pre>
+  </div>
+  <div class="notif">
+    <div class="ico">$</div>
+    <div><b>Finance tracker</b><small>6 new · SGD 143.70</small></div>
+  </div>
+
+  <h3>随时翻最近的账</h3>
+  <div class="term">
+    <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>show_transactions.py</span></div>
+<pre><span class="cmd">$ uv run python scripts/show_transactions.py</span>
+  <span class="dim">#  date        status   amount       merchant                   category              tags            src</span>
+<span class="dim">--------------------------------------------------------------------------------------------------------------</span>
+ 73  2026-05-28  posted    39.90 SGD   UNIQLO                     Shopping              ['clothing']    <span class="b">llm</span>
+ 72  2026-05-28  posted     5.30 SGD   KOI THE                    Food & Drink          ['drinks']      <span class="dim">cache</span>
+ 71  2026-05-27  pending   12.64 CAD*  TIM HORTONS                Food &amp; Drink          ['coffee']      <span class="dim">cache</span>
+ 70  2026-05-27  posted     8.90 SGD   GRAB                       Transport             ['taxi']        <span class="dim">cache</span>
+ 69  2026-05-26  posted    48.60 SGD   FAIRPRICE FINEST           Groceries             ['supermarket'] <span class="dim">rule</span>
+ 68  2026-05-25  posted    15.20 SGD   MCDONALD'S                 Food &amp; Drink          ['takeout']     <span class="dim">cache</span>
+ 67  2026-05-24  posted    51.00 SGD   GOLDEN VILLAGE             Entertainment         ['movies']      <span class="b">llm</span></pre>
+  </div>
+  <p style="color:var(--muted); font-size:14px"><code>*</code> 标记的是境外交易；<code>src</code> 一列表示这笔的分类来自 AI（<code>llm</code>）、还是本地缓存 / 规则复用（<code>cache</code> / <code>rule</code>）——复用越多，调用 AI 越省。</p>
+
+  <!-- ============ 2. NOTION ============ -->
+  <h2 class="sec"><span class="n">2</span>Notion 账目表</h2>
+  <p class="sec-sub">同一批数据同步到 Notion，随时在手机或电脑上翻看、筛选、按分类统计。金额统一折算成基准货币（这里是 SGD），原始币种保留在单独一列。</p>
+  <div class="notion">
+    <div class="top">
+      <div class="title"><span class="ic"></span>Transactions</div>
+      <div class="meta">Table · 73 rows · 2026 年 5 月</div>
+    </div>
+    <div class="scroll">
+    <table class="ntable">
+      <thead><tr>
+        <th>Merchant</th><th>Tags</th><th>Date</th><th>Card</th>
+        <th style="text-align:right">Amount</th><th>Category</th><th>Currency</th><th>Source</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td class="m">UNIQLO</td><td><span class="pill grey">clothing</span></td><td>2026-05-28</td>
+          <td><span class="pill red">scotiabank visa</span></td><td class="amt">39.90</td>
+          <td><span class="pill pink">Shopping</span></td><td class="cur">S$39.90</td><td class="src">llm</td>
+        </tr>
+        <tr>
+          <td class="m">KOI THE</td><td><span class="pill grey">drinks</span></td><td>2026-05-28</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">5.30</td>
+          <td><span class="pill orange">Food &amp; Drink</span></td><td class="cur">S$5.30</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">TIM HORTONS</td><td><span class="pill grey">coffee</span></td><td>2026-05-27</td>
+          <td><span class="pill red">scotiabank visa</span></td><td class="amt">12.20</td>
+          <td><span class="pill orange">Food &amp; Drink</span></td><td class="cur">CA$12.64</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">GRAB</td><td><span class="pill grey">taxi</span></td><td>2026-05-27</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">8.90</td>
+          <td><span class="pill blue">Transport</span></td><td class="cur">S$8.90</td><td class="src">cache</td>
+        </tr>
+        <tr>
+          <td class="m">FAIRPRICE FINEST</td><td><span class="pill grey">supermarket</span></td><td>2026-05-26</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">48.60</td>
+          <td><span class="pill green">Groceries</span></td><td class="cur">S$48.60</td><td class="src">rule</td>
+        </tr>
+        <tr>
+          <td class="m">GOLDEN VILLAGE</td><td><span class="pill grey">movies</span></td><td>2026-05-24</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">51.00</td>
+          <td><span class="pill purple">Entertainment</span></td><td class="cur">S$51.00</td><td class="src">llm</td>
+        </tr>
+        <tr>
+          <td class="m">GUARDIAN PHARMACY</td><td><span class="pill grey">pharmacy</span></td><td>2026-05-10</td>
+          <td><span class="pill green">dbs visa</span></td><td class="amt">41.20</td>
+          <td><span class="pill teal">Health</span></td><td class="cur">S$41.20</td><td class="src">llm</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <p style="color:var(--muted); font-size:14px">你在 Notion 里手动改的分类或补的备注，下次同步会被<b>读回</b>本地数据库并记住——以后同一个商家自动套用，不必再改第二次。</p>
+
+  <!-- ============ 3. MONTHLY REPORT ============ -->
+  <h2 class="sec"><span class="n">3</span>月度复盘报告</h2>
+  <p class="sec-sub">每月一份，数据分析为主。前四段是纯数字（概览 / 结构 / 节奏 / 异常），最后一段由 AI 把这些数字读成人能看懂的发现。生成的报告会存成 Markdown，也可推到 Notion。</p>
+
+  <div class="report">
+    <h4 class="rt">2026 年 5 月 · 消费复盘（SGD）</h4>
+
+    <h5>① 概览</h5>
+    <ul>
+      <li><b>总支出</b>：SGD 1,284.60
+        <ul><li class="kv">环比 2026-04（SGD 1,102.30）：<span class="up">+16.5%</span> ｜ vs 近 3 月均值（SGD 1,180.00）：<span class="up">+8.9%</span></li></ul>
+      </li>
+      <li class="egg-home"><b>笔数</b> 73 ｜ <b>平均单笔</b> SGD 17.60 ｜ <b>活跃</b> 24/31 天（无消费 7 天）</li>
+    </ul>
+
+    <h5>② 结构：钱去哪了</h5>
+    <h6>分类（含趋势）</h6>
+    <table>
+      <thead><tr><th>分类</th><th class="r">金额(SGD)</th><th class="r">占比</th><th class="r">笔数</th><th class="r">均单</th><th class="r">环比</th><th class="r">vs近3月</th></tr></thead>
+      <tbody>
+        <tr><td>Food &amp; Drink</td><td class="r">486.20</td><td class="r">38%</td><td class="r">41</td><td class="r">11.86</td><td class="r up">+12%</td><td class="r up">+8%</td></tr>
+        <tr><td>Groceries</td><td class="r">268.40</td><td class="r">21%</td><td class="r">9</td><td class="r">29.82</td><td class="r down">−5%</td><td class="r up">+3%</td></tr>
+        <tr><td>Transport</td><td class="r">176.90</td><td class="r">14%</td><td class="r">14</td><td class="r">12.64</td><td class="r up">+20%</td><td class="r up">+15%</td></tr>
+        <tr><td>Shopping</td><td class="r">152.00</td><td class="r">12%</td><td class="r">4</td><td class="r">38.00</td><td class="r down">−18%</td><td class="r down">−22%</td></tr>
+        <tr><td>Entertainment</td><td class="r">84.50</td><td class="r">7%</td><td class="r">3</td><td class="r">28.17</td><td class="r up">+40%</td><td class="r up">+30%</td></tr>
+        <tr><td>Health</td><td class="r">66.60</td><td class="r">5%</td><td class="r">2</td><td class="r">33.30</td><td class="r flat">—</td><td class="r flat">—</td></tr>
+        <tr><td>Housing &amp; Utilities</td><td class="r">50.00</td><td class="r">4%</td><td class="r">1</td><td class="r">50.00</td><td class="r flat">0%</td><td class="r flat">0%</td></tr>
+      </tbody>
+    </table>
+
+    <h6>Tag 视角</h6>
+    <ul>
+      <li><b>外食 vs 自炊</b>：外食(Food &amp; Drink) SGD 486.20 ｜ 自炊(Groceries) SGD 268.40 → 外食占比 <b>64%</b></li>
+      <li class="egg-dine"><b>咖啡</b> 11 笔 SGD 58.30 ｜ <b>下馆子(dining out)</b> 9 次</li>
+    </ul>
+
+    <h6>商家</h6>
+    <p style="margin:4px 0; font-size:13.5px"><b>按金额 Top 5 ｜ 按频次 Top 5</b></p>
+    <table>
+      <thead><tr><th>商家(金额)</th><th class="r">SGD</th><th>商家(频次)</th><th class="r">次</th></tr></thead>
+      <tbody>
+        <tr><td>FAIRPRICE FINEST</td><td class="r">148.60</td><td>GRAB</td><td class="r">9</td></tr>
+        <tr><td>SHOPEE</td><td class="r">92.00</td><td>KOI THE</td><td class="r">8</td></tr>
+        <tr><td>GOLDEN VILLAGE</td><td class="r">51.00</td><td>STARBUCKS</td><td class="r">6</td></tr>
+        <tr><td>GRAB</td><td class="r">44.50</td><td>7-ELEVEN</td><td class="r">6</td></tr>
+        <tr><td>GUARDIAN PHARMACY</td><td class="r">41.20</td><td>MCDONALD'S</td><td class="r">5</td></tr>
+      </tbody>
+    </table>
+    <ul><li class="kv"><b>高频复购<span class="egg-kao">(≥3×)</span></b>：GRAB×9、KOI THE×8、STARBUCKS×6、7-ELEVEN×6、MCDONALD'S×5</li></ul>
+
+    <h5>③ 节奏</h5>
+    <ul>
+      <li><b>工作日 vs 周末</b>：工作日 SGD 742.30（48 笔） ｜ 周末 SGD 542.30（25 笔）</li>
+      <li><b>最高消费日</b>：2026-05-17（SGD 186.40）</li>
+    </ul>
+    <div style="font-size:13.5px; font-weight:600; color:var(--accent-deep); margin:12px 0 4px">周趋势</div>
+    <div class="bars"><span class="lab">W1  </span> ████████████████████████         268.40
+<span class="lab">W2  </span> ████████████████████████████     312.60
+<span class="lab">W3  </span> ████████████████████████████████ 356.80
+<span class="lab">W4  </span> ██████████████████████           246.80
+<span class="lab">W5  </span> █████████                        100.00</div>
+
+    <h5>④ 异常与集中度</h5>
+    <ul><li><b>集中度</b>：金额 Top 5 笔占总支出 <b>21%</b></li></ul>
+    <p style="margin:4px 0; font-size:13.5px"><b>Top 5 单笔</b></p>
+    <ol style="margin:6px 0; padding-left:22px; font-size:14px">
+      <li><b>2026-05-17</b> · SHOPEE · SGD 92.00 <code>[一次性]</code></li>
+      <li><b>2026-05-24</b> · GOLDEN VILLAGE · SGD 51.00</li>
+      <li><b>2026-05-26</b> · FAIRPRICE FINEST · SGD 48.60</li>
+      <li><b>2026-05-10</b> · GUARDIAN PHARMACY · SGD 41.20 <code>[一次性]</code></li>
+      <li><b>2026-05-28</b> · UNIQLO · SGD 39.90 <code>[一次性]</code></li>
+    </ol>
+    <ul style="font-size:14px">
+      <li><b>离群大额</b>（≥ 平均单笔 5 倍）：<span class="kv">2026-05-17 · SHOPEE · SGD 92.00（一次性）</span></li>
+      <li><b>本月新商家</b>（6 家）：<span class="kv">UNIQLO、GUARDIAN PHARMACY、GONG CHA、DAISO、SUBWAY、CHAGEE</span></li>
+    </ul>
+
+    <div class="llm">
+      <h5 style="border:none">⑤ 解读 <span class="warnline" style="margin-left:8px; vertical-align:middle">AI 撰写 · 以下为示例</span></h5>
+      <h6>发现</h6>
+      <ul style="font-size:14px">
+        <li>Food &amp; Drink SGD 486、41 笔、占比 38%，是这个月最大的结构性开销；其中外食（dining out + takeout）占了七成，自炊只有 9 次采购。</li>
+        <li>打车 9 次共 SGD 142，环比 +20%，且集中在周中晚上——像是通勤或加班回家的固定支出。</li>
+        <li>喝的东西加起来超过 SGD 100：咖啡 11 笔 SGD 58，KOI／Gong Cha 这类茶饮另计 7 笔 SGD 45。</li>
+        <li>最大一笔 SHOPEE SGD 92 是一次性网购，剔掉后 Shopping 环比其实是下降的。</li>
+      </ul>
+      <h6>钱去哪了</h6>
+      <p style="font-size:14px">钱主要去了吃（38%）和买菜（21%），两项合计接近六成。跟上月比，Transport 涨了 20%、Entertainment 涨了 40%（但基数小、只有 3 笔），整体结构没有大变化。</p>
+      <h6>习惯</h6>
+      <ul style="font-size:14px">
+        <li>GRAB 打车 9 次、KOI 茶饮 8 次，是本月最稳定的两个重复消费。</li>
+        <li>便利店（7-Eleven）6 次、均单 SGD 5.4，多是零食饮料的小额补给。</li>
+      </ul>
+      <h6>一次性 vs 结构性</h6>
+      <p style="font-size:14px">SHOPEE SGD 92 和 UNIQLO SGD 39.9 都是一次性购物，不构成趋势；其余支出分布均匀，没有异常集中。</p>
+      <h6>数据看不到的</h6>
+      <p style="font-size:14px">整月没有房租、没有任何收入入账——你怎么住、收入从哪来，消费数据看不出来。也没有任何医疗（除一次买药）／健身支出。</p>
+      <h6>一点生活质感</h6>
+      <p class="egg-koi" style="font-size:14px">notes 里最有意思的是你对茶饮的执念：同一家 KOI 点了 8 次，还写过「今天这杯糖度刚好」。一个偏好很稳定的人。</p>
+    </div>
+
+    <p class="gen">生成于 2026-06-01 09:14 · 解读由 claude-sonnet-4-6 基于 73 笔支出、18 条 notes 撰写</p>
+  </div>
+
+  <div class="foot">
+    <p>以上界面与数字均为演示虚构。真实运行时，所有数据都在你自己的电脑和你自己的 Notion 里。</p>
+    <p>项目地址：<a href="https://github.com/xidan25/finance-tracker" target="_blank">github.com/xidan25/finance-tracker</a> · 开源协议 MIT</p>
+  </div>
+</div>
+<script>
+/* ---- 彩蛋 · 找齐 10 个 ---- */
+(function(){
+  var THEME=['#566234','#a7b372','#8a6a3f','#7d9a86','#c9a84f'];
+  var RAINBOW=['#bd5049','#c67e37','#b09b3c','#458a4d','#385fa8','#734d92'];
+  var TOTAL=10, KEY='ft-eggs-demo-zh';
+  var CHIP_BG='#faf9f3', CHIP_FG='#566234', CHIP_LN='#dcdbd1', SUB='#8f9088', SUBD='#565851';
+  var IDS=['title','doubt','lights','dollar','home','food','ai','dine','koi','konami'];
+  var found=[]; try{found=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  found=found.filter(function(x,i){return IDS.indexOf(x)>=0&&found.indexOf(x)===i;});
+  try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}
+  function confetti(){
+    var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9999';document.body.appendChild(c);
+    var x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,P=[],i;
+    for(i=0;i<170;i++)P.push({x:Math.random()*W,y:-20-Math.random()*H*0.4,r:4+Math.random()*6,col:THEME[i%THEME.length],vy:2+Math.random()*4,vx:-2.5+Math.random()*5,a:Math.random()*6.3,va:-0.25+Math.random()*0.5});
+    var t=0;(function f(){x.clearRect(0,0,W,H);t++;P.forEach(function(p){p.y+=p.vy;p.x+=p.vx;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.col;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.62);x.restore();});t<260?requestAnimationFrame(f):c.remove();})();
+  }
+  function confettiRainbow(){
+    var c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:10001';document.body.appendChild(c);
+    var x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,P=[],i;
+    for(i=0;i<220;i++)P.push({x:Math.random()*W,y:-20-Math.random()*H*0.5,r:7+Math.random()*10,col:RAINBOW[i%RAINBOW.length],vy:1.6+Math.random()*3.2,vx:-2.5+Math.random()*5,a:Math.random()*6.3,va:-0.22+Math.random()*0.44});
+    var t=0;(function f(){x.clearRect(0,0,W,H);t++;P.forEach(function(p){p.y+=p.vy;p.x+=p.vx;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.col;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.62);x.restore();});t<460?requestAnimationFrame(f):c.remove();})();
+  }
+  function rainbow(s){var o='',i;for(i=0;i<s.length;i++){var ch=s.charAt(i);o+='<span style="color:'+RAINBOW[i%6]+'">'+(ch===' '?'&nbsp;':ch)+'</span>';}return o;}
+  function center(msg,sub,note){
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10001;pointer-events:none';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.5);opacity:0;transition:transform .35s cubic-bezier(.2,1.5,.4,1),opacity .35s;background:rgba(255,255,255,.6);border-radius:20px;padding:18px 34px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);box-shadow:0 10px 34px rgba(0,0,0,.07)';
+    b.innerHTML=(msg?'<div style="font-size:38px;font-weight:800;line-height:1.12;letter-spacing:.03em">'+rainbow(msg)+'</div>':'')+(note?'<div style="margin-top:7px;font-size:12px;font-weight:600;color:'+SUBD+'">'+note+'</div>':'')+(sub?'<div style="margin-top:'+(msg?'11':'0')+'px;font-size:14px;font-weight:700;color:'+SUBD+'">'+sub+'</div>':'');
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){b.style.transform='scale(1)';b.style.opacity='1';});
+    setTimeout(function(){b.style.opacity='0';b.style.transform='scale(.92)';setTimeout(function(){o.remove();},380);},2300);
+  }
+  var chipEl;
+  function chip(){
+    if(!chipEl){chipEl=document.createElement('div');chipEl.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9998;background:'+CHIP_BG+';color:'+CHIP_FG+';border:1px solid '+CHIP_LN+';padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.10);letter-spacing:.14em;cursor:pointer';document.body.appendChild(chipEl);chipEl.title='双击清空彩蛋进度';chipEl.addEventListener('dblclick',function(){try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+'-kao');}catch(e){}location.reload();});}
+    var d='',i;for(i=0;i<TOTAL;i++)d+=(i<found.length?'●':'○');
+    chipEl.textContent='彩蛋 '+d+' '+found.length+'/'+TOTAL;
+  }
+  function award(id){
+    if(found.indexOf(id)>=0)return false;
+    found.push(id);try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}chip();return true;
+  }
+  function finale(after){
+    confetti();
+    var kaoDone=false;try{kaoDone=localStorage.getItem(KEY+'-kao')==='1';}catch(e){}
+    Array.prototype.forEach.call(document.querySelectorAll('.egg-kao'),function(el){el.style.cursor='pointer';});
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10002;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);cursor:pointer;opacity:0;transition:opacity .35s';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.6);transition:transform .45s cubic-bezier(.2,1.5,.4,1);background:rgba(255,255,255,.72);border-radius:28px;padding:38px 58px;box-shadow:0 20px 60px rgba(0,0,0,.12)';
+    b.innerHTML='<div style="font-size:42px;font-weight:800;line-height:1.12;letter-spacing:.03em">'+rainbow('全部集齐')+'</div><div style="margin-top:11px;font-size:13px;font-weight:600;color:'+SUBD+'">你是真的很闲，我喜欢</div><div style="margin-top:14px;font-size:15px;font-weight:700;color:'+SUBD+'">彩蛋成就 '+TOTAL+' / '+TOTAL+'</div>'+(kaoDone?'':'<div style="margin-top:18px;font-size:12.5px;font-weight:600;color:'+SUBD+';line-height:1.7">P.S. 还有一枚真正的隐藏彩蛋…<br>提示：报告里有一张脸 (^^)</div>')+'<div style="margin-top:18px;font-size:12px;color:'+SUBD+'">点击任意处关闭</div>';
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){o.style.opacity='1';b.style.transform='scale(1)';});
+    o.addEventListener('click',function(){o.style.opacity='0';setTimeout(function(){o.remove();if(after)after();},350);});
+  }
+  function reveal(id,msg,note){
+    confetti();
+    if(award(id)){
+      if(found.length>=TOTAL)finale(function(){center(msg,'彩蛋成就 '+found.length+' / '+TOTAL,note);});
+      else center(msg,'彩蛋成就 '+found.length+' / '+TOTAL,note);
+    }else center(msg,'已找到 · 彩蛋成就 '+found.length+' / '+TOTAL,note);
+  }
+  function bobaRain(){
+    for(var i=0;i<28;i++){
+      var s=document.createElement('div');s.textContent='🧋';
+      var size=40+Math.random()*44,dur=1900+Math.random()*1700,delay=Math.random()*600,rot=-50+Math.random()*100;
+      s.style.cssText='position:fixed;top:-70px;left:'+(Math.random()*100)+'vw;font-size:'+size+'px;z-index:10000;pointer-events:none';
+      document.body.appendChild(s);
+      (function(el){el.animate([{transform:'translateY(0) rotate(0deg)',opacity:1},{transform:'translateY('+(innerHeight+140)+'px) rotate('+rot+'deg)',opacity:1,offset:.85},{transform:'translateY('+(innerHeight+180)+'px) rotate('+rot+'deg)',opacity:0}],{duration:dur,delay:delay,easing:'cubic-bezier(.3,.2,.5,1)'}).onfinish=function(){el.remove();};})(s);
+    }
+  }
+  var kaoRun=false,kaoStop=Infinity,kaoN=0;
+  function kaoLoop(){if(!kaoRun)return;kaoStorm();kaoN++;if(kaoN>=kaoStop){kaoRun=false;return;}setTimeout(kaoLoop,1300);}
+  function startKao(){kaoRun=true;kaoStop=Infinity;kaoN=0;kaoLoop();}
+  function stopKaoSoon(){if(kaoRun)kaoStop=kaoN+1;}
+  function kaoStorm(){
+    var K=['↖(^ω^)↗','(>﹏<)','(⌒▽⌒)','(๑•̀ㅂ•́)و','(╯°□°)╯','(｡•́︿•̀｡)','ヽ(°〇°)ﾉ','(・∀・)','(￣▽￣)','(◕‿◕)','(ノ◕ヮ◕)ノ','(≧▽≦)','ʕ•ᴥ•ʔ','(°ロ°)','(´｡• ᵕ •｡`)'];
+    for(var i=0;i<21;i++){
+      var s=document.createElement('div');s.textContent=K[Math.floor(Math.random()*K.length)];
+      var y=Math.random()*96,size=24+Math.random()*36,dur=4200+Math.random()*3400,delay=Math.random()*1300,dir=Math.random()<0.5?1:-1,drift=-20+Math.random()*40;
+      s.style.cssText='position:fixed;top:'+y+'vh;left:0;font-size:'+size+'px;font-weight:700;white-space:nowrap;z-index:10000;pointer-events:none;color:'+RAINBOW[i%6];
+      document.body.appendChild(s);
+      (function(el,d,dr){el.animate([{transform:'translate('+(d>0?-35:135)+'vw,0) rotate(0deg)',opacity:0},{opacity:1,offset:.1},{opacity:1,offset:.9},{transform:'translate('+(d>0?135:-35)+'vw,'+dr+'vh) rotate('+(d*35)+'deg)',opacity:0}],{duration:dur,delay:delay,easing:'linear',fill:'backwards'}).onfinish=function(){el.remove();};})(s,dir,drift);
+    }
+  }
+  function kaoFinale(){
+    var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:10003;background:rgba(255,255,255,.2);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);cursor:pointer;opacity:0;transition:opacity .35s';
+    var b=document.createElement('div');b.style.cssText='text-align:center;transform:scale(.6);transition:transform .45s cubic-bezier(.2,1.5,.4,1);background:rgba(255,255,255,.85);border-radius:24px;padding:32px 48px;box-shadow:0 18px 56px rgba(0,0,0,.18);max-width:min(92vw,560px)';
+    b.addEventListener('click',function(e){e.stopPropagation();});
+    b.innerHTML='<div style="font-size:54px;font-weight:800;line-height:1.08;letter-spacing:.02em">'+rainbow('wink！')+'</div><div style="margin-top:7px;font-size:22px;font-weight:800;color:'+SUBD+'">真·全成就</div><div style="margin-top:15px;font-size:15px;font-weight:600;color:'+SUBD+';line-height:1.75">这一枚是真的彩蛋，截图这一页，<br>找作者领取礼物吧 (≥3×)</div><div style="margin-top:14px;font-size:14px;font-weight:700"><a href="mailto:kayla.x.zhang@gmail.com" style="color:'+CHIP_FG+';text-decoration:underline">kayla.x.zhang@gmail.com</a></div><div style="margin-top:20px;font-size:12px;color:'+SUBD+'">点击空白处关闭</div>';
+    o.appendChild(b);document.body.appendChild(o);
+    requestAnimationFrame(function(){o.style.opacity='1';b.style.transform='scale(1)';});
+    o.addEventListener('click',function(){o.style.opacity='0';stopKaoSoon();setTimeout(function(){o.remove();},350);});
+  }
+  function kaoHit(){
+    if(found.length<TOTAL)return;
+    try{localStorage.setItem(KEY+'-kao','1');}catch(e){}
+    confettiRainbow();
+    startKao();
+    kaoFinale();
+  }
+  function click(sel,id,msg,note){Array.prototype.forEach.call(document.querySelectorAll(sel),function(el){el.style.cursor='pointer';el.addEventListener('click',function(){reveal(id,msg,note);});});}
+  click('h1','title','你好！标题彩蛋');
+  click('.demo-note','doubt','真的是假的啦');
+  click('.term .bar','lights','不要关 还在跑');
+  click('.notif','dollar','叮 你又破费了');
+  click('.egg-home','home','宅家省钱大法');
+  click('.pill.orange','food','民以食为天！');
+  click('.llm h5','ai','夸夸Claude','（月报生成使用 sonnet4.6）');
+  click('.egg-dine','dine','对自己差点吧');
+  function koiHit(){
+    bobaRain();
+    if(award('koi')){if(found.length>=TOTAL){finale(function(){center('','彩蛋成就 '+found.length+' / '+TOTAL);});return;}center('','彩蛋成就 '+found.length+' / '+TOTAL);}
+    else center('','已找到 · 彩蛋成就 '+found.length+' / '+TOTAL);
+  }
+  function wrapKoi(){
+    var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+      if(!n.nodeValue||n.nodeValue.indexOf('KOI')<0)return NodeFilter.FILTER_REJECT;
+      var p=n.parentNode;while(p&&p!==document.body){var t=p.nodeName;if(t==='SCRIPT'||t==='STYLE')return NodeFilter.FILTER_REJECT;if(p.classList&&p.classList.contains('egg-koi'))return NodeFilter.FILTER_REJECT;p=p.parentNode;}
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    var ns=[],n;while(n=w.nextNode())ns.push(n);
+    ns.forEach(function(tn){var parts=tn.nodeValue.split('KOI'),frag=document.createDocumentFragment();parts.forEach(function(part,i){if(i>0){var s=document.createElement('span');s.className='egg-koi';s.textContent='KOI';frag.appendChild(s);}if(part)frag.appendChild(document.createTextNode(part));});tn.parentNode.replaceChild(frag,tn);});
+  }
+  wrapKoi();
+  Array.prototype.forEach.call(document.querySelectorAll('.egg-koi'),function(el){el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();koiHit();});});
+  Array.prototype.forEach.call(document.querySelectorAll('.egg-kao'),function(el){if(found.length>=TOTAL)el.style.cursor='pointer';el.addEventListener('click',function(e){e.stopPropagation();kaoHit();});});
+  var seq=[38,38,40,40,37,39,37,39,66,65],pos=0;
+  addEventListener('keydown',function(e){pos=(e.keyCode===seq[pos])?pos+1:(e.keyCode===seq[0]?1:0);if(pos===seq.length){pos=0;reveal('konami','这你也知道？！');}});
+  if(found.length)chip();
+  console.log('%c finance-tracker ','background:#566234;color:#fff;padding:4px 10px;border-radius:5px;font-weight:700','\n  藏了 10 个彩蛋。到处点点看（标题、演示徽章、终端窗口、通知卡、无消费天数、Food & Drink 标签、AI 解读段、下馆子、KOI），还有 Konami code：↑ ↑ ↓ ↓ ← → ← → B A\n');
+})();
+</script>
+</body>
+</html>
