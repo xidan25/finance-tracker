@@ -352,10 +352,8 @@
   }
   function reveal(id,msg,note){
     confetti();
-    if(award(id)){
-      if(found.length>=TOTAL)finale(function(){center(msg,'彩蛋成就 '+found.length+' / '+TOTAL,note);});
-      else center(msg,'彩蛋成就 '+found.length+' / '+TOTAL,note);
-    }else center(msg,'已找到 · 彩蛋成就 '+found.length+' / '+TOTAL,note);
+    if(award(id)){center(msg,'彩蛋成就 '+found.length+' / '+TOTAL,note);if(found.length>=TOTAL)setTimeout(finale,1300);}
+    else center(msg,'已找到 · 彩蛋成就 '+found.length+' / '+TOTAL,note);
   }
   function bobaRain(){
     for(var i=0;i<28;i++){
@@ -407,7 +405,7 @@
   click('.egg-dine','dine','对自己差点吧');
   function koiHit(){
     bobaRain();
-    if(award('koi')){if(found.length>=TOTAL){finale(function(){center('','彩蛋成就 '+found.length+' / '+TOTAL);});return;}center('','彩蛋成就 '+found.length+' / '+TOTAL);}
+    if(award('koi')){center('','彩蛋成就 '+found.length+' / '+TOTAL);if(found.length>=TOTAL)setTimeout(finale,1300);}
     else center('','已找到 · 彩蛋成就 '+found.length+' / '+TOTAL);
   }
   function wrapKoi(){

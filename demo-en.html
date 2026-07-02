@@ -347,10 +347,8 @@
   }
   function reveal(id,msg,note){
     confetti();
-    if(award(id)){
-      if(found.length>=TOTAL)finale(function(){center(msg,'achievement '+found.length+' / '+TOTAL,note);});
-      else center(msg,'achievement '+found.length+' / '+TOTAL,note);
-    }else center(msg,'already found · achievement '+found.length+' / '+TOTAL,note);
+    if(award(id)){center(msg,'achievement '+found.length+' / '+TOTAL,note);if(found.length>=TOTAL)setTimeout(finale,1300);}
+    else center(msg,'already found · achievement '+found.length+' / '+TOTAL,note);
   }
   function bobaRain(){
     for(var i=0;i<28;i++){
@@ -402,7 +400,7 @@
   click('.egg-dine','dine','Treat yourself less');
   function koiHit(){
     bobaRain();
-    if(award('koi')){if(found.length>=TOTAL){finale(function(){center('','achievement '+found.length+' / '+TOTAL);});return;}center('','achievement '+found.length+' / '+TOTAL);}
+    if(award('koi')){center('','achievement '+found.length+' / '+TOTAL);if(found.length>=TOTAL)setTimeout(finale,1300);}
     else center('','already found · achievement '+found.length+' / '+TOTAL);
   }
   function wrapKoi(){
